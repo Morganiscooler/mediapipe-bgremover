@@ -37,6 +37,7 @@
       display: none;
       max-height: 70%;
       max-width: 70%;
+      
     }
 
     .canvas-segmentation {
@@ -59,9 +60,60 @@
       color: white;
       border: none;
       border-radius: 4px;
-      font-size: 16px;
+      font-size: 20px;
       cursor: pointer;
+      animation: loadIn 0.3s ease;
     }
+
+     .grow-on-hover{
+  display: inline-block;
+  vertical-align: middle;
+  -webkit-transform: perspective(1px) translateZ(0);
+  transform: perspective(1px) translateZ(0);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+  -webkit-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+  -webkit-transition-property: transform filter font-size;
+  transition-property: transform filter font-size;
+     }
+
+     .grow-on-hover:hover, .grow-on-hover:focus, .grow-on-hover:active {
+  -webkit-transform: scale(1.05);
+  filter: brightness(0.9);
+  transform: scale(1.05);
+  font-size: 23px
+}
+
+    #resultCanvas, #imageUpload {
+      box-shadow:  0px 0px 10px rgba(0, 0, 0, 0.25);
+      border: #000 1px solid;
+      border-radius: 5px;
+      animation: loadIn 0.4s ease;
+     }
+
+    h2, h3{
+      animation: loadIn 0.3s ease;
+    }
+
+
+    @keyframes loadIn {
+      from {  opacity: 0.1; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0px);}
+      
+    }
+
+    #uploadFile, #status{
+      animation: loadIn 0.4s ease;
+    }
+
+    #uploadFile{
+      box-shadow:  0px 0px 10px rgba(0, 0, 0, 0.25);
+      border-radius: 15px;
+      padding: 15px;
+      height: 70px;
+     }
+
+
   </style>
 </head>
 
@@ -73,15 +125,18 @@
   <div class="container">
     <div class="original" style="display: none;">
     </div>
-    <div class="detectOnClick" id="result">
-      <h3 style="font-weight: 600; font-size: 25x;">Click to segment</h3>
-      <img id="imageUpload" width="100%" crossorigin="anonymous" title="Click to segment image" />
-      <canvas class="outputCanvas" style="display: none;"></canvas>
-      <span class="click-point"></span>
-      <canvas id="resultCanvas"></canvas>
-      <button id="downloadBtn" class="download-btn" style="display: none;">Download Image</button>
-      <div id="result1" style="width: 500px; height: 100px;"></div>
-    </div>
+<div class="detectOnClick" id="result">
+  <h2 style="font-weight: 600; font-size: 25x;">Click to segment</h2>
+  <h3 style="font-weight: 600; font-size: 20x;">Original Image:</h3>
+  <img id="imageUpload" width="100%" crossorigin="anonymous" title="Click to segment image" />
+<h3 id="resultHeading" style="font-weight: 600; font-size: 20x; margin-top: 20px; display: none;">Result Image:</h3>
+<canvas id="resultCanvas" title="Result image" style="display: none;"> </canvas>
+  <canvas class="outputCanvas" style="display: none;"></canvas>
+  <span class="click-point"></span>
+
+  <button id="downloadBtn" class="download-btn grow-on-hover" style="display: none;">Download Image</button>
+  <div id="result1" style="width: 500px; height: 100px;"></div>
+</div>
   </div>
 
   <script type="module">
@@ -192,61 +247,65 @@
     }
 
     // Draw segmentation result
-    function drawSegmentation(mask, targetElement) {
-      const width = mask.width;
-      const height = mask.height;
-      const maskData = mask.getAsFloat32Array();
-      const canvas = targetElement.getElementsByClassName("outputCanvas")[0];
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
+function drawSegmentation(mask, targetElement) {
+  const width = mask.width;
+  const height = mask.height;
+  const maskData = mask.getAsFloat32Array();
+  const canvas = targetElement.getElementsByClassName("outputCanvas")[0];
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
 
-      // Draw the original image first
-      ctx.drawImage(imageUpload, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const actualImageData = imageData.data;
+  // Draw the original image first
+  ctx.drawImage(imageUpload, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const actualImageData = imageData.data;
 
-      // Prepare the result canvas
-      resultCanvas.width = width;
-      resultCanvas.height = height;
-      const resultCtx = resultCanvas.getContext('2d');
-      resultCtx.clearRect(0, 0, width, height);
+  // Prepare the result canvas
+  resultCanvas.width = width;
+  resultCanvas.height = height;
+  const resultCtx = resultCanvas.getContext('2d');
+  resultCtx.clearRect(0, 0, width, height);
 
-      // Create a new ImageData for the result
-      const resultImageData = resultCtx.createImageData(width, height);
+  // Create a new ImageData for the result
+  const resultImageData = resultCtx.createImageData(width, height);
 
-      // Process the mask to create transparent background
-      for (let i = 0; i < maskData.length; i++) {
-        const pos = i * 4;
-        if (Math.round(maskData[i] * 255.0) === 0) {
-          // Foreground - copy original pixel
-          resultImageData.data[pos] = actualImageData[pos];     // R
-          resultImageData.data[pos+1] = actualImageData[pos+1]; // G
-          resultImageData.data[pos+2] = actualImageData[pos+2]; // B
-          resultImageData.data[pos+3] = 255;                    // A (opaque)
-        } else {
-          // Background - transparent
-          resultImageData.data[pos] = 0;     // R
-          resultImageData.data[pos+1] = 0;   // G
-          resultImageData.data[pos+2] = 0;   // B
-          resultImageData.data[pos+3] = 0;   // A (transparent)
-        }
-      }
-
-      // Put the processed image data back to the canvas
-      resultCtx.putImageData(resultImageData, 0, 0);
-
-      // Show the download button
-      downloadBtn.style.display = "block";
-      
-      // Convert canvas to blob and store the URL
-      resultCanvas.toBlob((blob) => {
-        if (currentResultBlobUrl) {
-          URL.revokeObjectURL(currentResultBlobUrl);
-        }
-        currentResultBlobUrl = URL.createObjectURL(blob);
-      }, 'image/png');
+  // Process the mask to create transparent background
+  for (let i = 0; i < maskData.length; i++) {
+    const pos = i * 4;
+    if (Math.round(maskData[i] * 255.0) === 0) {
+      // Foreground - copy original pixel
+      resultImageData.data[pos] = actualImageData[pos];     // R
+      resultImageData.data[pos+1] = actualImageData[pos+1]; // G
+      resultImageData.data[pos+2] = actualImageData[pos+2]; // B
+      resultImageData.data[pos+3] = 255;                    // A (opaque)
+    } else {
+      // Background - transparent
+      resultImageData.data[pos] = 0;     // R
+      resultImageData.data[pos+1] = 0;   // G
+      resultImageData.data[pos+2] = 0;   // B
+      resultImageData.data[pos+3] = 0;   // A (transparent)
     }
+  }
+
+  // Put the processed image data back to the canvas
+  resultCtx.putImageData(resultImageData, 0, 0);
+
+  // Show the result heading and canvas
+  document.getElementById("resultHeading").style.display = "block";
+  resultCanvas.style.display = "block";
+  
+  // Show the download button
+  downloadBtn.style.display = "block";
+  
+  // Convert canvas to blob and store the URL
+  resultCanvas.toBlob((blob) => {
+    if (currentResultBlobUrl) {
+      URL.revokeObjectURL(currentResultBlobUrl);
+    }
+    currentResultBlobUrl = URL.createObjectURL(blob);
+  }, 'image/png');
+}
 
     // Handle download button click
     downloadBtn.addEventListener("click", async () => {
