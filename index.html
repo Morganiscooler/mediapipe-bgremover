@@ -9,6 +9,99 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
     crossorigin="anonymous"></script>
   <style>
+
+
+/* Responsive styles for screens 1000px or less - 35% larger */
+@media (max-width: 1000px) {
+  body {
+    padding: 20.25px; /* 15px * 1.35 */
+    text-align: center;
+    transform: scale(1.35);
+    transform-origin: top center;
+    width: 75%; /* Prevent horizontal scroll */
+    margin: 0 auto;
+  }
+  
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  #imageUpload, #resultCanvas {
+    max-width: 135%;
+    max-height: none;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+
+  .download-btn {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    transform: scale(1.35);
+    font-size: 27px; /* 20px * 1.35 */
+    padding: 13.5px 27px; /* 10px 20px * 1.35 */
+  }
+  
+  .result {
+    width: 135%;
+    text-align: center;
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 47.25px !important; /* 35px * 1.35 */
+  }
+  
+  h3 {
+    font-size: 24.3px; /* 18px * 1.35 */
+  }
+  
+  #uploadFile {
+    width: 135%;
+    max-width: 540px; /* 400px * 1.35 */
+    font-size: 27px; /* 20px * 1.35 */
+    height: 94.5px; /* 70px * 1.35 */
+    padding: 20.25px; /* 15px * 1.35 */
+    border-radius: 20.25px; /* 15px * 1.35 */
+  }
+
+  #status {
+    font-size: 27px; /* 20px * 1.35 */
+    margin: 13.5px 0; /* 10px * 1.35 */
+  }
+
+  #title {
+    font-size: 47.25px; /* 35px * 1.35 */
+  }
+
+  #resultHeading {
+    font-size: 27px !important; /* 20px * 1.35 */
+    margin-top: 27px; /* 20px * 1.35 */
+  }
+
+  #resultCanvas, #imageUpload {
+    border-radius: 6.75px; /* 5px * 1.35 */
+    box-shadow: 0px 0px 13.5px rgba(0, 0, 0, 0.25); /* 10px * 1.35 */
+    border-width: 1.35px; /* 1px * 1.35 */
+  }
+
+  .grow-on-hover:hover, .grow-on-hover:focus, .grow-on-hover:active {
+    font-size: 31.05px; /* 23px * 1.35 */
+    transform: scale(1.4175); /* 1.05 * 1.35 */
+  }
+
+  @keyframes loadIn {
+    from { opacity: 0.1; transform: translateY(-13.5px) scale(1.35); } /* -10px * 1.35 */
+    to { opacity: 1; transform: translateY(0px) scale(1.35); }
+  }
+}
+
+
+
+
+
     #outputCanvas {
       border: 1px solid #ccc;
       margin-top: 20px;
@@ -95,6 +188,9 @@
       animation: loadIn 0.3s ease;
     }
 
+    #title{
+      font-size: 35px;
+    }
 
     @keyframes loadIn {
       from {  opacity: 0.1; transform: translateY(-10px); }
@@ -118,7 +214,7 @@
 </head>
 
 <body>
-  <h2 style="font-size: 28px; text-align: left;"> Background Removal Tool</h2>
+  <h2 id="title"> Background Removal Tool</h2>
   <input type="file" id="uploadFile" style="font-size: 25px;" accept="image/*" />
   <div id="status" style="font-size: 20px;">Model not loaded yet</div>
 
